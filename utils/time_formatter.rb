@@ -1,23 +1,33 @@
 class TimeFormatter
-  AVAILABLE_FORMATS = %w(year month day hour minute second).freeze
-
   OPTIONS = {
-    "year" => '%Y',
-    "month" => '%m',
-    "day" => '%d',
-    "hour" => '%H',
-    "minute" => '%M',
-    "second" => '%S'
+    'year' => '%Y',
+    'month' => '%m',
+    'day' => '%d',
+    'hour' => '%H',
+    'minute' => '%M',
+    'second' => '%S'
   }
 
+  TimeFormatterResult = Struct.new(:value, :errors) do
+    def success?
+      errors.length.zero?
+    end
+  end
+
   def self.formating(time, format = 'year,month,day')
-    fields = format.split(",")
+    fields = format.split(',')
 
-    error_fields = fields.find_all {|f| !AVAILABLE_FORMATS.include?(f)}
-    return { error_fields: error_fields } unless error_fields.length.zero?
+    error_fields = []
+    formatted_fields = []
 
-    fields.map! {|f| time.strftime(OPTIONS[f]) }
+    fields.each do |f|
+      if OPTIONS.keys.include?(f)
+        formatted_fields << time.strftime(OPTIONS[f])
+      else
+        error_fields << f
+      end
+    end
 
-    { value: fields.join("-") }
+    TimeFormatterResult.new(formatted_fields.join('-'), error_fields.join(', '))
   end
 end

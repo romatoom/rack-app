@@ -1,49 +1,33 @@
-require_relative "utils/time_formatter"
+require_relative 'actions'
 
 class Router
-  include Rack::Utils
+  extend Rack::Utils
 
-  ROUTES = [
-    {
-      name: 'time',
-      method: 'GET',
-      path: '/time',
-      action: :get_current_time
+  ROUTES = {
+    'GET' => {
+      '/time' => :get_current_time
     }
-  ].freeze
+  }
 
-  def initialize; end
+  def self.get_response(request)
+    request_method = request.request_method
+    request_path = request.path
+    request_params = request.params
 
-  def get_response(method, request_path, query_values)
-    route = find_route(method, request_path)
-    return not_found_response if route.nil?
+    route_action = Router.find_route_action(request_method, request_path)
+    return Router.generate_response(status: :not_found, body_content: 'Not found!') if route_action.nil?
 
-    self.send route[:action], query_values
+    Actions.send(route_action, request_params)
+  end
+
+  def self.generate_response(status:, body_content:, headers: { 'ContentType' => 'text/plain' })
+    Rack::Response.new([body_content], status_code(status), headers)
   end
 
   private
 
-  def find_route(method, request_path)
-    ROUTES.find { |r| r[:method] == method && r[:path] == request_path }
+  def self.find_route_action(request_method, request_path)
+    ROUTES[request_method][request_path]
   end
 
-  def not_found_response
-    [status_code(:not_found), headers, ["Not found!"]]
-  end
-
-  def headers
-    { 'ContentType' => 'text/plain' }
-  end
-
-  def get_current_time(query_values = {})
-    format = query_values["format"]
-    time_formatted = TimeFormatter.formating(Time.now, format)
-
-    error_fields = time_formatted[:error_fields]
-    unless error_fields.nil?
-      return [status_code(:bad_request), headers, ["Unknown time format \[#{error_fields.join(", ")}\]"]]
-    end
-
-    [status_code(:ok), headers, [time_formatted[:value]]]
-  end
 end
