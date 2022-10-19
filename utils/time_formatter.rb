@@ -8,26 +8,28 @@ class TimeFormatter
     'second' => '%S'
   }
 
-  TimeFormatterResult = Struct.new(:value, :errors) do
-    def success?
-      errors.length.zero?
-    end
+  attr_reader :errors, :fields
+
+  def success?
+    errors.length.zero?
   end
 
-  def self.formating(time, format = 'year,month,day')
-    fields = format.split(',')
+  def formating(time, format = 'year,month,day')
+    self.fields = []
+    self.errors = []
 
-    error_fields = []
-    formatted_fields = []
+    all_fields = format.split(',')
 
-    fields.each do |f|
+    all_fields.each do |f|
       if OPTIONS.keys.include?(f)
-        formatted_fields << time.strftime(OPTIONS[f])
+        self.fields << time.strftime(OPTIONS[f])
       else
-        error_fields << f
+        self.errors << f
       end
     end
-
-    TimeFormatterResult.new(formatted_fields.join('-'), error_fields.join(', '))
   end
+
+  private
+
+  attr_writer :errors, :fields
 end
