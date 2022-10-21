@@ -12,7 +12,6 @@ class TimeApp
   private
 
   attr_accessor :request
-  attr_reader :time_formatter_service
 
   def set_current_time_response
     if (format = get_format_parametr).nil?
