@@ -21,7 +21,7 @@ class TimeApp
       )
     end
 
-    time_formatted = TimeFormatter.new(Time.now, format).call
+    time_formatted = TimeFormatter.new(format).call
     if time_formatted.success?
       generate_response(status: :ok, body_content: time_formatted.result)
     else
@@ -31,7 +31,7 @@ class TimeApp
 
   def get_format_parametr
     request.params['format']
-  rescue
+  rescue Rack::QueryParser::InvalidParameterError => e
   end
 
   def generate_response(status:, body_content:)

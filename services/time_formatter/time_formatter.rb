@@ -10,8 +10,9 @@ class TimeFormatter
     'second' => '%S'
   }
 
-  def initialize(time, format)
-    @time, @format = time, format
+  def initialize(format)
+    @format = format
+    @time_now = Time.now
   end
 
   def call
@@ -22,7 +23,7 @@ class TimeFormatter
 
     all_fields.each do |f|
       if OPTIONS.keys.include?(f)
-        fields << time.strftime(OPTIONS[f])
+        fields << time_now.strftime(OPTIONS[f])
       else
         error_fields << f
       end
@@ -33,5 +34,5 @@ class TimeFormatter
 
   private
 
-  attr_reader :time, :format
+  attr_reader :time_now, :format
 end
